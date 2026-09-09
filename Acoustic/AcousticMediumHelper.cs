@@ -23,7 +23,7 @@ namespace Marus.Communications.Acoustics
 {
     public static class AcousticMediumHelper
     {
-        static Dictionary<int, (int, List<int>)> _mediumDevicesCache = new Dictionary<int, (int, List<int>)>();
+        static Dictionary<AcousticMedium, (int, AcousticDevice[])> _mediumDevicesCache = new Dictionary<AcousticMedium, (int, AcousticDevice[])>();
         static AcousticDevice[] _allDevicesCache;
         static AcousticDevice[] AllDevicesCache
         {
@@ -65,27 +65,21 @@ namespace Marus.Communications.Acoustics
         
         public static AcousticDevice[] GetDevicesInMeduim(AcousticMedium medium)
         {
-            var mediumId = medium.GetInstanceID();
+            if (medium == null) return System.Array.Empty<AcousticDevice>();
             var currentFrame = Time.frameCount;
-            if (_mediumDevicesCache.TryGetValue(mediumId, out var tuple))
+            if (_mediumDevicesCache.TryGetValue(medium, out var tuple))
             {
-                (var frame, var list) = tuple;
+                (var frame, var devices) = tuple;
                 if (frame == currentFrame)
                 {
-#if UNITY_EDITOR
-                    var devices = list
-                        .Select(x => (AcousticDevice)EditorUtility.InstanceIDToObject(x));
-                    return devices.ToArray();
-#endif
+                    return devices;
                 }
             }
 
             var accDevices = Object.FindObjectsOfType<AcousticDevice>(includeInactive:false)
                                    .Where(x => medium.IsPointInside(x.transform)).ToArray();
 
-            var devicesList = new List<int>();
-            devicesList.AddRange(accDevices.Select(x => x.GetInstanceID()));
-            _mediumDevicesCache[mediumId] = (currentFrame, devicesList);
+            _mediumDevicesCache[medium] = (currentFrame, accDevices);
 
             return accDevices;
         }

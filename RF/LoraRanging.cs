@@ -64,7 +64,7 @@ namespace Marus.Communications.Rf
             }
             Ranges = new List<RangeReading>();
             _advancedNodes = GetComponentsInChildren<LoraDevice>(false).ToList();
-            _advancedNodes.RemoveAll(x => x.GetInstanceID() == Master.GetInstanceID());
+            _advancedNodes.RemoveAll(x => x == Master);
             advancedRanging = _advancedNodes.Count > 0;
         }
 
